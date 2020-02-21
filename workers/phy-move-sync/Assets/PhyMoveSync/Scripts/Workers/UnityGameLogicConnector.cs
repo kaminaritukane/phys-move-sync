@@ -1,10 +1,10 @@
-﻿using BlankProject.Scripts.Config;
+﻿using PhyMoveSync.Scripts.Config;
 using Improbable.Gdk.Core;
 using Improbable.Gdk.PlayerLifecycle;
 using Improbable.Worker.CInterop;
 using UnityEngine;
 
-namespace BlankProject
+namespace PhyMoveSync
 {
     public class UnityGameLogicConnector : WorkerConnector
     {

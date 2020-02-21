@@ -1,12 +1,13 @@
-using System.IO;
 using Improbable;
 using Improbable.Gdk.Core;
 using Improbable.Gdk.PlayerLifecycle;
+using System.IO;
 using UnityEditor;
 using UnityEngine;
 using Snapshot = Improbable.Gdk.Core.Snapshot;
+using PhyMoveSync;
 
-namespace BlankProject.Editor
+namespace PhyMoveSync.Editor
 {
     internal static class SnapshotGenerator
     {

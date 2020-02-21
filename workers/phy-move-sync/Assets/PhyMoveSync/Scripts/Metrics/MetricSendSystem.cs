@@ -4,7 +4,7 @@ using Improbable.Worker.CInterop;
 using Unity.Entities;
 using UnityEngine;
 
-namespace BlankProject
+namespace PhyMoveSync
 {
     [DisableAutoCreation]
     public class MetricSendSystem : ComponentSystem
