@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using Unity.Entities;
 using Unity.Mathematics;
@@ -48,12 +49,33 @@ namespace PhyMoveSync
                                 break;
                             case UnitAction.eUnitAction.AutoStopMove:
                                 {
-                                    if (EntityManager.HasComponent<MoveAcceleration>(entity))
+                                    if ( EntityManager.HasComponent<MoveAcceleration>(entity)
+                                        && !EntityManager.HasComponent<StopMovement>(entity) )
                                     {
-                                        var acceleration = new MoveAcceleration { linear = float3.zero };
                                         PostUpdateCommands.AddComponent<StopMovement>(entity);
                                     }
                                     // no UnitAcceleratio, means stopped
+                                }
+                                break;
+                            case UnitAction.eUnitAction.TurnUp:
+                                AddRotateAcceleration(entity, Vector3.left, act.parameter);
+                                break;
+                            case UnitAction.eUnitAction.StopTurnUp:
+                                AddRotateAcceleration(entity, Vector3.left, -act.parameter);
+                                break;
+                            case UnitAction.eUnitAction.TurnRight:
+                                AddRotateAcceleration(entity, Vector3.up, act.parameter);
+                                break;
+                            case UnitAction.eUnitAction.StopTurnRight:
+                                AddRotateAcceleration(entity, Vector3.up, -act.parameter);
+                                break;
+                            case UnitAction.eUnitAction.AutoStopTurn:
+                                {
+                                    if (EntityManager.HasComponent<RotateAcceleration>(entity)
+                                        && !EntityManager.HasComponent<StopRotation>(entity))
+                                    {
+                                        PostUpdateCommands.AddComponent<StopRotation>(entity);
+                                    }
                                 }
                                 break;
                         }
@@ -64,7 +86,7 @@ namespace PhyMoveSync
             );
         }
 
-        private void AddMoveAcceleration(Entity entity, Vector3 dir, float parameter)
+        private void AddMoveAcceleration(Entity entity, float3 dir, float parameter)
         {
             if (EntityManager.HasComponent<Rotation>(entity)
                 && EntityManager.HasComponent<MoveAbility>(entity))
@@ -88,6 +110,32 @@ namespace PhyMoveSync
                 if (EntityManager.HasComponent<StopMovement>(entity))
                 {
                     PostUpdateCommands.RemoveComponent<StopMovement>(entity);
+                }
+            }
+        }
+
+        private void AddRotateAcceleration(Entity entity, float3 rotateAxis, float parameter)
+        {
+            if (EntityManager.HasComponent<MoveAbility>(entity))
+            {
+                var moveAbility = EntityManager.GetComponentData<MoveAbility>(entity);
+                var angularAcc = rotateAxis * parameter;
+
+                if (EntityManager.HasComponent<RotateAcceleration>(entity))
+                {
+                    var accComp = EntityManager.GetComponentData<RotateAcceleration>(entity);
+                    accComp.angular += angularAcc;
+                    EntityManager.SetComponentData(entity, accComp);
+                }
+                else
+                {
+                    var acceleration = new RotateAcceleration { angular = angularAcc };
+                    PostUpdateCommands.AddComponent<RotateAcceleration>(entity, acceleration);
+                }
+
+                if (EntityManager.HasComponent<StopRotation>(entity))
+                {
+                    PostUpdateCommands.RemoveComponent<StopRotation>(entity);
                 }
             }
         }

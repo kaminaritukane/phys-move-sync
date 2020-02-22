@@ -33,7 +33,7 @@ namespace PhyMoveSync
         public bool hasRotateInput;
     }
 
-    [InternalBufferCapacity(8)]
+    [InternalBufferCapacity(16)]
     public struct UnitAction : IBufferElementData
     {
         public enum eUnitAction
@@ -43,9 +43,11 @@ namespace PhyMoveSync
             MoveRight,
             StopMoveRight,
             AutoStopMove,
-            TurnLeft,
+            TurnUp,
+            StopTurnUp,
             TurnRight,
-            StopTurn
+            StopTurnRight,
+            AutoStopTurn
         }
 
         public eUnitAction action;

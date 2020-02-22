@@ -146,14 +146,31 @@ namespace PhyMoveSync
                     if (rotateAccelerationGroup.HasComponent(entity))
                     {
                         var angAcc = rotateAccelerationGroup[entity];
-                        bool isStopRotate = stopRotationGroup.HasComponent(entity);
-                        phyVel.Angular += angAcc.angular * deltaTime * (isStopRotate ? -1f : 1f);
 
-                        if (isStopRotate
-                            && Unity.Mathematics.math.lengthsq(phyVel.Angular) < 1.0e-6f)
+                        bool isStopRotate = stopRotationGroup.HasComponent(entity);
+                        if ( isStopRotate )
                         {
-                            ecb.RemoveComponent<RotateAcceleration>(entity);
-                            ecb.RemoveComponent<StopRotation>(entity);
+                            var rotateAngular = accAbility.angularAcceleration * deltaTime;
+                            var sqRotateAngular = rotateAngular * rotateAngular;
+                            var sqPhyAng = math.lengthsq(phyVel.Angular);
+                            if ( sqPhyAng < sqRotateAngular ) // stopped 
+                            {
+                                phyVel.Angular = float3.zero;
+                                ecb.RemoveComponent<RotateAcceleration>(entity);
+                                ecb.RemoveComponent<StopRotation>(entity);
+                            }
+                            else
+                            {
+                                var stopRot = math.normalize(-phyVel.Angular);
+                                var stopAcc = stopRot * accAbility.angularAcceleration;
+                                phyVel.Angular += stopAcc * deltaTime;
+                            }
+                        }
+                        else
+                        {
+                            var roteAcc = rotateAccelerationGroup[entity];
+                            var roteAngular = roteAcc.angular * deltaTime;
+                            phyVel.Angular += roteAngular;
                         }
                     }
 
