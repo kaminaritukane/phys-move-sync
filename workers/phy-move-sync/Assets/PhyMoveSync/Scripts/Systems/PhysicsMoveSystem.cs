@@ -106,18 +106,30 @@ namespace PhyMoveSync
                     if (moveAccelerationGroup.HasComponent(entity))
                     {
                         var moveAcc = moveAccelerationGroup[entity];
-                        bool isStopMove = stopMovementGroup.HasComponent(entity);
                         var moveLinear = moveAcc.linear * deltaTime;
-                        phyVel.Linear += moveLinear * (isStopMove ? -1f : 1f);
 
-                        var sqMoveLinear = Unity.Mathematics.math.lengthsq(moveLinear);
-                        var sqPhyVel = Unity.Mathematics.math.lengthsq(phyVel.Linear);
-                        if (isStopMove
-                            && sqPhyVel < sqMoveLinear)
+                        bool isStopMove = stopMovementGroup.HasComponent(entity);
+                        if ( isStopMove )
                         {
-                            phyVel.Linear = float3.zero;
-                            ecb.RemoveComponent<MoveAcceleration>(entity);
-                            ecb.RemoveComponent<StopMovement>(entity);
+                            var sqMoveLinear = math.lengthsq(moveLinear);
+                            var sqPhyVel = math.lengthsq(phyVel.Linear);
+                            if (sqPhyVel < sqMoveLinear)// stopped
+                            {
+                                phyVel.Linear = float3.zero;
+                                ecb.RemoveComponent<MoveAcceleration>(entity);
+                                ecb.RemoveComponent<StopMovement>(entity);
+                            }
+                            else
+                            {
+                                var stopDir = math.normalize(-phyVel.Linear);
+                                var accSpeed = math.length(moveAcc.linear);
+                                var stopAcc = stopDir * accSpeed;
+                                phyVel.Linear += stopAcc * deltaTime;
+                            }
+                        }
+                        else
+                        {
+                            phyVel.Linear += moveLinear;
                         }
                     }
 
