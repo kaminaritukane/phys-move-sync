@@ -35,15 +35,22 @@ namespace PhyMoveSync
                         switch(act.action)
                         {
                             case UnitAction.eUnitAction.MoveForward:
-                                AddMoveAcceleration(entity, Vector3.forward);
+                                AddMoveAcceleration(entity, Vector3.forward, act.parameter);
                                 break;
-                            case UnitAction.eUnitAction.MoveBackward:
-                                AddMoveAcceleration(entity, Vector3.back);
+                            case UnitAction.eUnitAction.StopMoveForward:
+                                AddMoveAcceleration(entity, Vector3.forward, -act.parameter);
                                 break;
-                            case UnitAction.eUnitAction.StopMove:
+                            case UnitAction.eUnitAction.MoveRight:
+                                AddMoveAcceleration(entity, Vector3.right, act.parameter);
+                                break;
+                            case UnitAction.eUnitAction.StopMoveRight:
+                                AddMoveAcceleration(entity, Vector3.right, -act.parameter);
+                                break;
+                            case UnitAction.eUnitAction.AutoStopMove:
                                 {
                                     if (EntityManager.HasComponent<MoveAcceleration>(entity))
                                     {
+                                        var acceleration = new MoveAcceleration { linear = float3.zero };
                                         PostUpdateCommands.AddComponent<StopMovement>(entity);
                                     }
                                     // no UnitAcceleratio, means stopped
@@ -57,21 +64,24 @@ namespace PhyMoveSync
             );
         }
 
-        private void AddMoveAcceleration(Entity entity, Vector3 dir)
+        private void AddMoveAcceleration(Entity entity, Vector3 dir, float parameter)
         {
-            if (EntityManager.HasComponent<Rotation>(entity))
+            if (EntityManager.HasComponent<Rotation>(entity)
+                && EntityManager.HasComponent<MoveAbility>(entity))
             {
                 var rotComp = EntityManager.GetComponentData<Rotation>(entity);
-                var accSpeed = 1.0f;
-                var direction = math.mul(rotComp.Value, dir * accSpeed);
+                var moveAbility = EntityManager.GetComponentData<MoveAbility>(entity);
+                var linearAcc = math.mul(rotComp.Value, dir * parameter * moveAbility.linearAcceleration);
 
-                var acceleration = new MoveAcceleration { linear = direction };
                 if (EntityManager.HasComponent<MoveAcceleration>(entity))
                 {
-                    EntityManager.SetComponentData(entity, acceleration);
+                    var accComp = EntityManager.GetComponentData<MoveAcceleration>(entity);
+                    accComp.linear += linearAcc;
+                    EntityManager.SetComponentData(entity, accComp);
                 }
                 else
                 {
+                    var acceleration = new MoveAcceleration { linear = linearAcc };
                     PostUpdateCommands.AddComponent<MoveAcceleration>(entity, acceleration);
                 }
 

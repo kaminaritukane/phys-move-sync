@@ -29,6 +29,7 @@ namespace PhyMoveSync
                     ComponentType.ReadOnly<Rotation>(),
                     ComponentType.ReadOnly<PhysicsCollider>(),
                     ComponentType.ReadWrite<PhysicsVelocity>(),
+                    ComponentType.ReadOnly<MoveAbility>()
                 },
                 Any = new ComponentType[] {
                     ComponentType.ReadOnly<MoveAcceleration>(),
@@ -50,6 +51,7 @@ namespace PhyMoveSync
                 ecb = ecb,
                 entities = physicsQuery.ToEntityArray(Allocator.TempJob),
                 velocityGroup = GetComponentDataFromEntity<PhysicsVelocity>(),
+                moveAbilityGroup = GetComponentDataFromEntity<MoveAbility>(true),
                 moveAccelerationGroup = GetComponentDataFromEntity<MoveAcceleration>(true),
                 rotateAccelerationGroup = GetComponentDataFromEntity<RotateAcceleration>(true),
                 stopMovementGroup = GetComponentDataFromEntity<StopMovement>(true),
@@ -75,6 +77,11 @@ namespace PhyMoveSync
             EntityManager.SetComponentData(entity, new PhysicsCollider { Value = sourceCollider });
             EntityManager.SetComponentData(entity, new PhysicsVelocity { Linear = new float3(0, 0, 0) });
 
+            EntityManager.AddComponentData(entity, new MoveAbility{
+                linearAcceleration = 1f,
+                angularAcceleration = 1f
+            });
+
             EntityManager.AddComponentData(entity, new InputReceiver { 
                 hasMoveInput = false, 
                 hasRotateInput = false 
@@ -89,6 +96,7 @@ namespace PhyMoveSync
             [DeallocateOnJobCompletion] [ReadOnly] public NativeArray<Entity> entities;
 
             public ComponentDataFromEntity<PhysicsVelocity> velocityGroup;
+            [ReadOnly] public ComponentDataFromEntity<MoveAbility> moveAbilityGroup;
             [ReadOnly] public ComponentDataFromEntity<MoveAcceleration> moveAccelerationGroup;
             [ReadOnly] public ComponentDataFromEntity<RotateAcceleration> rotateAccelerationGroup;
             [ReadOnly] public ComponentDataFromEntity<StopMovement> stopMovementGroup;
@@ -101,17 +109,16 @@ namespace PhyMoveSync
                 {
                     var entity = entities[i];
                     var phyVel = velocityGroup[entity];
+                    var accAbility = moveAbilityGroup[entity];
 
                     // linear
                     if (moveAccelerationGroup.HasComponent(entity))
                     {
-                        var moveAcc = moveAccelerationGroup[entity];
-                        var moveLinear = moveAcc.linear * deltaTime;
-
                         bool isStopMove = stopMovementGroup.HasComponent(entity);
                         if ( isStopMove )
                         {
-                            var sqMoveLinear = math.lengthsq(moveLinear);
+                            var moveLinear = accAbility.linearAcceleration * deltaTime;
+                            var sqMoveLinear = moveLinear * moveLinear;
                             var sqPhyVel = math.lengthsq(phyVel.Linear);
                             if (sqPhyVel < sqMoveLinear)// stopped
                             {
@@ -122,15 +129,17 @@ namespace PhyMoveSync
                             else
                             {
                                 var stopDir = math.normalize(-phyVel.Linear);
-                                var accSpeed = math.length(moveAcc.linear);
-                                var stopAcc = stopDir * accSpeed;
+                                var stopAcc = stopDir * accAbility.linearAcceleration;
                                 phyVel.Linear += stopAcc * deltaTime;
                             }
                         }
                         else
                         {
+                            var moveAcc = moveAccelerationGroup[entity];
+                            var moveLinear = moveAcc.linear * deltaTime;
                             phyVel.Linear += moveLinear;
                         }
+                        //Debug.Log($"phyVel Linear: {phyVel.Linear}");
                     }
 
                     // angular

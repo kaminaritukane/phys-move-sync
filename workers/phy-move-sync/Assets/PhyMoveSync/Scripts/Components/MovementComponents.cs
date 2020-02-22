@@ -3,6 +3,12 @@ using Unity.Mathematics;
 
 namespace PhyMoveSync
 {
+    public struct MoveAbility : IComponentData
+    {
+        public float linearAcceleration;
+        public float angularAcceleration;
+    }
+
     public struct MoveAcceleration : IComponentData
     {
         public float3 linear;
@@ -33,15 +39,16 @@ namespace PhyMoveSync
         public enum eUnitAction
         {
             MoveForward,
-            MoveBackward,
-            MoveLeft,
+            StopMoveForward,
             MoveRight,
-            StopMove,
+            StopMoveRight,
+            AutoStopMove,
             TurnLeft,
             TurnRight,
             StopTurn
         }
 
         public eUnitAction action;
+        public float parameter;
     }
 }
