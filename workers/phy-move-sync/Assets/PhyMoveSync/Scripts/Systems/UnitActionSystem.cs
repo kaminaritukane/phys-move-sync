@@ -36,16 +36,16 @@ namespace PhyMoveSync
                         switch(act.action)
                         {
                             case UnitAction.eUnitAction.MoveForward:
-                                AddMoveAcceleration(entity, Vector3.forward, act.parameter);
+                                AddMoveAcceleration(entity, MoveAcceleration.Direction.Forward, act.parameter);
                                 break;
                             case UnitAction.eUnitAction.StopMoveForward:
-                                AddMoveAcceleration(entity, Vector3.forward, -act.parameter);
+                                AddMoveAcceleration(entity, MoveAcceleration.Direction.Forward, -act.parameter);
                                 break;
                             case UnitAction.eUnitAction.MoveRight:
-                                AddMoveAcceleration(entity, Vector3.right, act.parameter);
+                                AddMoveAcceleration(entity, MoveAcceleration.Direction.Right, act.parameter);
                                 break;
                             case UnitAction.eUnitAction.StopMoveRight:
-                                AddMoveAcceleration(entity, Vector3.right, -act.parameter);
+                                AddMoveAcceleration(entity, MoveAcceleration.Direction.Right, -act.parameter);
                                 break;
                             case UnitAction.eUnitAction.AutoStopMove:
                                 {
@@ -86,25 +86,46 @@ namespace PhyMoveSync
             );
         }
 
-        private void AddMoveAcceleration(Entity entity, float3 dir, float parameter)
+        private void AddMoveAcceleration(Entity entity,
+            MoveAcceleration.Direction eMoveDir, float parameter)
         {
-            if (EntityManager.HasComponent<Rotation>(entity)
-                && EntityManager.HasComponent<MoveAbility>(entity))
+            if (EntityManager.HasComponent<MoveAbility>(entity))
             {
-                var rotComp = EntityManager.GetComponentData<Rotation>(entity);
                 var moveAbility = EntityManager.GetComponentData<MoveAbility>(entity);
-                var linearAcc = math.mul(rotComp.Value, dir * parameter * moveAbility.linearAcceleration);
 
                 if (EntityManager.HasComponent<MoveAcceleration>(entity))
                 {
                     var accComp = EntityManager.GetComponentData<MoveAcceleration>(entity);
-                    accComp.linear += linearAcc;
+                    switch( eMoveDir )
+                    {
+                        case MoveAcceleration.Direction.Forward:
+                            accComp.forwardSpeed += parameter * moveAbility.linearAcceleration;
+                            break;
+                        case MoveAcceleration.Direction.Right:
+                            accComp.rightSpeed += parameter * moveAbility.linearAcceleration;
+                            break;
+                        case MoveAcceleration.Direction.Up:
+                            accComp.upSpeed += parameter * moveAbility.linearAcceleration;
+                            break;
+                    }
                     EntityManager.SetComponentData(entity, accComp);
                 }
                 else
                 {
-                    var acceleration = new MoveAcceleration { linear = linearAcc };
-                    PostUpdateCommands.AddComponent<MoveAcceleration>(entity, acceleration);
+                    var accComp = new MoveAcceleration();
+                    switch (eMoveDir)
+                    {
+                        case MoveAcceleration.Direction.Forward:
+                            accComp.forwardSpeed = parameter * moveAbility.linearAcceleration;
+                            break;
+                        case MoveAcceleration.Direction.Right:
+                            accComp.rightSpeed = parameter * moveAbility.linearAcceleration;
+                            break;
+                        case MoveAcceleration.Direction.Up:
+                            accComp.upSpeed = parameter * moveAbility.linearAcceleration;
+                            break;
+                    }
+                    PostUpdateCommands.AddComponent<MoveAcceleration>(entity, accComp);
                 }
 
                 if (EntityManager.HasComponent<StopMovement>(entity))

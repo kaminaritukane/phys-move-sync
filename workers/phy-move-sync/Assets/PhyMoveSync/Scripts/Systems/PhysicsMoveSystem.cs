@@ -13,7 +13,6 @@ namespace PhyMoveSync
     public class PhysicsMoveSystem : JobComponentSystem
     {
         private EndSimulationEntityCommandBufferSystem m_EndSimulationEcbSystem;
-
         private EntityQuery physicsQuery;
 
         protected override void OnCreate()
@@ -52,6 +51,7 @@ namespace PhyMoveSync
                 entities = physicsQuery.ToEntityArray(Allocator.TempJob),
                 velocityGroup = GetComponentDataFromEntity<PhysicsVelocity>(),
                 moveAbilityGroup = GetComponentDataFromEntity<MoveAbility>(true),
+                rotationGroup = GetComponentDataFromEntity<Rotation>(true),
                 moveAccelerationGroup = GetComponentDataFromEntity<MoveAcceleration>(true),
                 rotateAccelerationGroup = GetComponentDataFromEntity<RotateAcceleration>(true),
                 stopMovementGroup = GetComponentDataFromEntity<StopMovement>(true),
@@ -96,7 +96,9 @@ namespace PhyMoveSync
             [DeallocateOnJobCompletion] [ReadOnly] public NativeArray<Entity> entities;
 
             public ComponentDataFromEntity<PhysicsVelocity> velocityGroup;
+
             [ReadOnly] public ComponentDataFromEntity<MoveAbility> moveAbilityGroup;
+            [ReadOnly] public ComponentDataFromEntity<Rotation> rotationGroup;
             [ReadOnly] public ComponentDataFromEntity<MoveAcceleration> moveAccelerationGroup;
             [ReadOnly] public ComponentDataFromEntity<RotateAcceleration> rotateAccelerationGroup;
             [ReadOnly] public ComponentDataFromEntity<StopMovement> stopMovementGroup;
@@ -110,9 +112,10 @@ namespace PhyMoveSync
                     var entity = entities[i];
                     var phyVel = velocityGroup[entity];
                     var accAbility = moveAbilityGroup[entity];
+                    var rot = rotationGroup[entity];
 
                     // linear
-                    if (moveAccelerationGroup.HasComponent(entity))
+                    if ( moveAccelerationGroup.HasComponent(entity) )
                     {
                         bool isStopMove = stopMovementGroup.HasComponent(entity);
                         if ( isStopMove )
@@ -136,7 +139,8 @@ namespace PhyMoveSync
                         else
                         {
                             var moveAcc = moveAccelerationGroup[entity];
-                            var moveLinear = moveAcc.linear * deltaTime;
+                            var moveLinear = math.mul(rot.Value, moveAcc.localLinear * deltaTime);
+
                             phyVel.Linear += moveLinear;
                         }
                         //Debug.Log($"phyVel Linear: {phyVel.Linear}");
@@ -148,12 +152,12 @@ namespace PhyMoveSync
                         var angAcc = rotateAccelerationGroup[entity];
 
                         bool isStopRotate = stopRotationGroup.HasComponent(entity);
-                        if ( isStopRotate )
+                        if (isStopRotate)
                         {
                             var rotateAngular = accAbility.angularAcceleration * deltaTime;
                             var sqRotateAngular = rotateAngular * rotateAngular;
                             var sqPhyAng = math.lengthsq(phyVel.Angular);
-                            if ( sqPhyAng < sqRotateAngular ) // stopped 
+                            if (sqPhyAng < sqRotateAngular) // stopped 
                             {
                                 phyVel.Angular = float3.zero;
                                 ecb.RemoveComponent<RotateAcceleration>(entity);

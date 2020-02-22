@@ -1,5 +1,6 @@
 ﻿using Unity.Entities;
 using Unity.Mathematics;
+using UnityEngine;
 
 namespace PhyMoveSync
 {
@@ -11,7 +12,27 @@ namespace PhyMoveSync
 
     public struct MoveAcceleration : IComponentData
     {
-        public float3 linear;
+        public enum Direction
+        {
+            Forward,
+            Right,
+            Up
+        }
+
+        public float forwardSpeed;
+        public float rightSpeed;
+        public float upSpeed;
+
+        public float3 localLinear
+        {
+            get
+            {
+                var fwd = Vector3.forward * forwardSpeed;
+                var rht = Vector3.right * rightSpeed;
+                var up  = Vector3.up * upSpeed;
+                return fwd + rht + up;
+            }
+        }
     }
 
     public struct StopMovement : IComponentData
