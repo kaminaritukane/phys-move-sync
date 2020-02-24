@@ -162,68 +162,68 @@ namespace PhyMoveSync
                     var rot = rotationGroup[entity];
 
                     // linear
-                    if ( moveAccelerationGroup.HasComponent(entity) )
+                    bool isStopMove = stopMovementGroup.HasComponent(entity);
+                    if ( isStopMove )
                     {
-                        bool isStopMove = stopMovementGroup.HasComponent(entity);
-                        if ( isStopMove )
+                        var moveLinear = accAbility.linearAcceleration * deltaTime;
+                        var sqMoveLinear = moveLinear * moveLinear;
+                        var sqPhyVel = math.lengthsq(phyVel.Linear);
+                        if (sqPhyVel < sqMoveLinear)// stopped
                         {
-                            var moveLinear = accAbility.linearAcceleration * deltaTime;
-                            var sqMoveLinear = moveLinear * moveLinear;
-                            var sqPhyVel = math.lengthsq(phyVel.Linear);
-                            if (sqPhyVel < sqMoveLinear)// stopped
-                            {
-                                phyVel.Linear = float3.zero;
-                                ecb.RemoveComponent<MoveAcceleration>(entity);
-                                ecb.RemoveComponent<StopMovement>(entity);
-                            }
-                            else
-                            {
-                                var stopDir = math.normalize(-phyVel.Linear);
-                                var stopAcc = stopDir * accAbility.linearAcceleration;
-                                phyVel.Linear += stopAcc * deltaTime;
-                            }
+                            phyVel.Linear = float3.zero;
+                            ecb.RemoveComponent<MoveAcceleration>(entity);
+                            ecb.RemoveComponent<StopMovement>(entity);
                         }
                         else
+                        {
+                            var stopDir = math.normalize(-phyVel.Linear);
+                            var stopAcc = stopDir * accAbility.linearAcceleration;
+                            phyVel.Linear += stopAcc * deltaTime;
+                        }
+                    }
+                    else
+                    {
+                        if (moveAccelerationGroup.HasComponent(entity))
                         {
                             var moveAcc = moveAccelerationGroup[entity];
                             var moveLinear = math.mul(rot.Value, moveAcc.localLinear * deltaTime);
 
                             phyVel.Linear += moveLinear;
                         }
-                        //Debug.Log($"phyVel Linear: {phyVel.Linear}");
                     }
+                    //Debug.Log($"phyVel Linear: {phyVel.Linear}");
 
                     // angular
-                    if (rotateAccelerationGroup.HasComponent(entity))
+                    
+                    bool isStopRotate = stopRotationGroup.HasComponent(entity);
+                    if (isStopRotate)
                     {
-                        var angAcc = rotateAccelerationGroup[entity];
-
-                        bool isStopRotate = stopRotationGroup.HasComponent(entity);
-                        if (isStopRotate)
+                        var rotateAngular = accAbility.angularAcceleration * deltaTime;
+                        var sqRotateAngular = rotateAngular * rotateAngular;
+                        var sqPhyAng = math.lengthsq(phyVel.Angular);
+                        if (sqPhyAng < sqRotateAngular) // stopped 
                         {
-                            var rotateAngular = accAbility.angularAcceleration * deltaTime;
-                            var sqRotateAngular = rotateAngular * rotateAngular;
-                            var sqPhyAng = math.lengthsq(phyVel.Angular);
-                            if (sqPhyAng < sqRotateAngular) // stopped 
-                            {
-                                phyVel.Angular = float3.zero;
-                                ecb.RemoveComponent<RotateAcceleration>(entity);
-                                ecb.RemoveComponent<StopRotation>(entity);
-                            }
-                            else
-                            {
-                                var stopRot = math.normalize(-phyVel.Angular);
-                                var stopAcc = stopRot * accAbility.angularAcceleration;
-                                phyVel.Angular += stopAcc * deltaTime;
-                            }
+                            phyVel.Angular = float3.zero;
+                            ecb.RemoveComponent<RotateAcceleration>(entity);
+                            ecb.RemoveComponent<StopRotation>(entity);
                         }
                         else
+                        {
+                            var stopRot = math.normalize(-phyVel.Angular);
+                            var stopAcc = stopRot * accAbility.angularAcceleration;
+                            phyVel.Angular += stopAcc * deltaTime;
+                        }
+                    }
+                    else
+                    {
+                        if (rotateAccelerationGroup.HasComponent(entity))
                         {
                             var roteAcc = rotateAccelerationGroup[entity];
                             var roteAngular = roteAcc.angular * deltaTime;
                             phyVel.Angular += roteAngular;
                         }
                     }
+                    
 
                     velocityGroup[entity] = phyVel;
                 }

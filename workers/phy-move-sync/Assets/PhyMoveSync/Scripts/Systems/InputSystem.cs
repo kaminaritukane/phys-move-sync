@@ -114,18 +114,34 @@ namespace PhyMoveSync
                 //Debug.Log("Add Action: StopMoveRight -1");
             }
 
-            // auto stop move
-            var hasMoveInput = Input.GetKey(KeyCode.W)
-                || Input.GetKey(KeyCode.S)
-                || Input.GetKey(KeyCode.A)
-                || Input.GetKey(KeyCode.D);
-            if ( iptReceiver.hasMoveInput && !hasMoveInput )
+            if (Input.GetKeyDown(KeyCode.X))
             {
-                actions.Add(new UnitAction { action = UnitAction.eUnitAction.AutoStopMove });
-                //Debug.Log("Add Action: AutoStopMove");
+                actions.Add(new UnitAction
+                {
+                    action = UnitAction.eUnitAction.AutoStopMove
+                });
+                actions.Add(new UnitAction
+                {
+                    action = UnitAction.eUnitAction.AutoStopTurn
+                });
+                iptReceiver.hasMoveInput = false;
+                iptReceiver.hasRotateInput = false;
             }
+            else
+            {
+                // auto stop move
+                var hasMoveInput = Input.GetKey(KeyCode.W)
+                    || Input.GetKey(KeyCode.S)
+                    || Input.GetKey(KeyCode.A)
+                    || Input.GetKey(KeyCode.D);
+                if (iptReceiver.hasMoveInput && !hasMoveInput)
+                {
+                    actions.Add(new UnitAction { action = UnitAction.eUnitAction.AutoStopMove });
+                    //Debug.Log("Add Action: AutoStopMove");
+                }
 
-            iptReceiver.hasMoveInput = hasMoveInput;
+                iptReceiver.hasMoveInput = hasMoveInput;
+            }
         }
 
         private void CheckRotateInputs(DynamicBuffer<UnitAction> actions, ref InputReceiver iptReceiver)

@@ -49,8 +49,7 @@ namespace PhyMoveSync
                                 break;
                             case UnitAction.eUnitAction.AutoStopMove:
                                 {
-                                    if ( EntityManager.HasComponent<MoveAcceleration>(entity)
-                                        && !EntityManager.HasComponent<StopMovement>(entity) )
+                                    if ( !EntityManager.HasComponent<StopMovement>(entity) )
                                     {
                                         PostUpdateCommands.AddComponent<StopMovement>(entity);
                                     }
@@ -71,8 +70,7 @@ namespace PhyMoveSync
                                 break;
                             case UnitAction.eUnitAction.AutoStopTurn:
                                 {
-                                    if (EntityManager.HasComponent<RotateAcceleration>(entity)
-                                        && !EntityManager.HasComponent<StopRotation>(entity))
+                                    if (!EntityManager.HasComponent<StopRotation>(entity))
                                     {
                                         PostUpdateCommands.AddComponent<StopRotation>(entity);
                                     }
