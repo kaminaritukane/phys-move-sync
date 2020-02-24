@@ -1,0 +1,36 @@
+package phy_move_sync;
+
+import "improbable/standard_library.schema";
+
+type IntAbsolute {
+	sint32 x = 1;
+	sint32 y = 2;
+	sint32 z = 3;
+}
+
+type TransformInfo{
+	IntAbsolute position = 1;
+	IntAbsolute rotation = 2;
+	sint32 delta_time = 3;
+}
+
+type EntityTransformInfo{
+	EntityId entity_id = 1;
+	TransformInfo transform_info = 2;
+}
+
+type UnitsTransformPackage{
+	list<EntityTransformInfo> entity_transform_infos = 1;
+}
+
+component ClientUnitTransform{
+	id = 4001;
+	TransformInfo info = 1;
+	
+	event TransformInfo units_transform_changed;
+}
+
+component ServerUnitTransform{
+	id = 4006;
+	event UnitsTransformPackage units_transform_sync;
+}

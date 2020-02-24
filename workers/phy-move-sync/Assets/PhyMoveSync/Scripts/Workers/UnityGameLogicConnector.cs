@@ -40,6 +40,8 @@ namespace PhyMoveSync
         protected override void HandleWorkerConnectionEstablished()
         {
             Worker.World.GetOrCreateSystem<MetricSendSystem>();
+            Worker.World.GetOrCreateSystem<ServerUnitCreatSystem>();
+
             PlayerLifecycleHelper.AddServerSystems(Worker.World);
         }
     }

@@ -39,7 +39,79 @@ namespace PhyMoveSync
             };
             physicsQuery = GetEntityQuery(queryDesc);
 
-            CreateUnit(@"Prefabs/Units/BlueShip");
+            CreatePhysicsStep();
+
+            //CreateStaticUnit(@"Prefabs/Cube");
+            //CreateDynimicUnit(@"Prefabs/Cube");
+            //CreateDynimicUnit(@"Prefabs/UnityClient/Authority/Player");
+        }
+
+        void CreatePhysicsStep()
+        {
+            var entity = EntityManager.CreateEntity(new ComponentType[] { });
+
+            EntityManager.AddComponentData(entity, new LocalToWorld { });
+            EntityManager.AddComponentData(entity, new PhysicsStep
+            {
+                SimulationType = SimulationType.UnityPhysics,
+                Gravity = float3.zero,
+                SolverIterationCount = 4,
+                ThreadCountHint = 8
+            });
+            EntityManager.AddComponentData(entity, new Rotation { Value = quaternion.identity });
+            EntityManager.AddComponentData(entity, new Translation { Value = float3.zero });
+        }
+
+        private void CreateStaticUnit(string prefabPath)
+        {
+            var prefab = Resources.Load<GameObject>(prefabPath);
+            var sourceEntity = GameObjectConversionUtility.ConvertGameObjectHierarchy(prefab, World.Active);
+            var sourceCollider = EntityManager.GetComponentData<PhysicsCollider>(sourceEntity).Value;
+
+            var entity = EntityManager.Instantiate(sourceEntity);
+            EntityManager.SetComponentData(entity, new Translation { Value = new float3(0, 0, 0) });
+            EntityManager.SetComponentData(entity, new Rotation { Value = Quaternion.identity });
+            EntityManager.SetComponentData(entity, new PhysicsCollider { Value = sourceCollider });
+        }
+
+        private void CreateDynimicUnit(string prefabPath)
+        {
+            var prefab = Resources.Load<GameObject>(prefabPath);
+            var sourceEntity = GameObjectConversionUtility.ConvertGameObjectHierarchy(prefab, World.Active);
+            var sourceCollider = EntityManager.GetComponentData<PhysicsCollider>(sourceEntity).Value;
+
+            var entity = EntityManager.Instantiate(sourceEntity);
+            EntityManager.SetComponentData(entity, new Translation { Value = new float3(0, 0, 5) });
+            EntityManager.SetComponentData(entity, new Rotation { Value = Quaternion.identity });
+
+            var colliderComp = new PhysicsCollider
+            {
+                Value = sourceCollider
+            };
+            EntityManager.SetComponentData(entity, colliderComp);
+            EntityManager.AddComponentData(entity, new PhysicsVelocity { Linear = new float3(0, 0, 0) });
+            EntityManager.AddComponentData(entity, PhysicsMass.CreateDynamic(
+                colliderComp.MassProperties, 1f
+            ));
+            EntityManager.AddComponentData(entity, new PhysicsDamping
+            {
+                Linear = 0.01f,
+                Angular = 0.03f
+            });
+
+            EntityManager.AddComponentData(entity, new MoveAbility
+            {
+                linearAcceleration = 1f,
+                angularAcceleration = 1f
+            });
+
+            EntityManager.AddComponentData(entity, new InputReceiver
+            {
+                hasMoveInput = false,
+                hasRotateInput = false
+            });
+
+            EntityManager.AddBuffer<UnitAction>(entity);
         }
 
         protected override JobHandle OnUpdate(JobHandle inputDeps)
@@ -63,31 +135,6 @@ namespace PhyMoveSync
             m_EndSimulationEcbSystem.AddJobHandleForProducer(moveJobHandle);
 
             return moveJobHandle;
-        }
-
-        private void CreateUnit(string prefabPath)
-        {
-            var prefab = Resources.Load<GameObject>(prefabPath);
-            var sourceEntity = GameObjectConversionUtility.ConvertGameObjectHierarchy(prefab, World.Active);
-            var sourceCollider = EntityManager.GetComponentData<PhysicsCollider>(sourceEntity).Value;
-
-            var entity = EntityManager.Instantiate(sourceEntity);
-            EntityManager.SetComponentData(entity, new Translation { Value = new float3(0, 0, 5) });
-            EntityManager.SetComponentData(entity, new Rotation { Value = Quaternion.identity });
-            EntityManager.SetComponentData(entity, new PhysicsCollider { Value = sourceCollider });
-            EntityManager.SetComponentData(entity, new PhysicsVelocity { Linear = new float3(0, 0, 0) });
-
-            EntityManager.AddComponentData(entity, new MoveAbility{
-                linearAcceleration = 1f,
-                angularAcceleration = 1f
-            });
-
-            EntityManager.AddComponentData(entity, new InputReceiver { 
-                hasMoveInput = false, 
-                hasRotateInput = false 
-            });
-
-            EntityManager.AddBuffer<UnitAction>(entity);
         }
 
         struct MovePhysicsUnitJob : IJob

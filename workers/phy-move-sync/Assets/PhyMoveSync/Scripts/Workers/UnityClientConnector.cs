@@ -1,6 +1,9 @@
-﻿using System;
-using Improbable.Gdk.Core;
+﻿using Improbable.Gdk.Core;
 using Improbable.Gdk.PlayerLifecycle;
+using System;
+using Unity.Physics.Systems;
+using Unity.Rendering;
+using Unity.Transforms;
 using UnityEngine;
 
 namespace PhyMoveSync
@@ -41,6 +44,23 @@ namespace PhyMoveSync
 
         protected override void HandleWorkerConnectionEstablished()
         {
+            Worker.World.CreateSystem<ClientUnitCreatSystem>(transform.position);
+
+            Worker.World.GetOrCreateSystem<InputSystem>();
+            Worker.World.GetOrCreateSystem<UnitActionSystem>();
+            Worker.World.GetOrCreateSystem<PhysicsMoveSystem>();
+
+            Worker.World.GetOrCreateSystem<BuildPhysicsWorld>();
+            Worker.World.GetOrCreateSystem<StepPhysicsWorld>();
+            Worker.World.GetOrCreateSystem<ExportPhysicsWorld>();
+            Worker.World.GetOrCreateSystem<EndFramePhysicsSystem>();
+
+            // for render
+            Worker.World.GetOrCreateSystem<EndFrameTRSToLocalToWorldSystem>();
+            Worker.World.GetOrCreateSystem<CreateMissingRenderBoundsFromMeshRenderer>();
+            Worker.World.GetOrCreateSystem<RenderBoundsUpdateSystem>();
+            Worker.World.GetOrCreateSystem<RenderMeshSystemV2>();
+
             PlayerLifecycleHelper.AddClientSystems(Worker.World);
         }
     }
