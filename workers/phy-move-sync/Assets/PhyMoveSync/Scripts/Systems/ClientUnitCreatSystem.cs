@@ -130,7 +130,9 @@ namespace PhyMoveSync
             EntityManager.AddComponentData(entity, new MoveAbility
             {
                 linearAcceleration = 1f,
-                angularAcceleration = 1f
+                angularAcceleration = 1f,
+                maxLinearSpeed = 3f,
+                maxAngularSpeed = 2f
             });
 
             EntityManager.AddComponentData(entity, new InputReceiver

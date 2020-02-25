@@ -8,6 +8,8 @@ namespace PhyMoveSync
     {
         public float linearAcceleration;
         public float angularAcceleration;
+        public float maxLinearSpeed;
+        public float maxAngularSpeed;
     }
 
     public struct MoveAcceleration : IComponentData

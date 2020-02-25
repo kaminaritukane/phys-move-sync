@@ -102,7 +102,9 @@ namespace PhyMoveSync
             EntityManager.AddComponentData(entity, new MoveAbility
             {
                 linearAcceleration = 1f,
-                angularAcceleration = 1f
+                angularAcceleration = 1f,
+                maxLinearSpeed = 3f,
+                maxAngularSpeed = 2f
             });
 
             EntityManager.AddComponentData(entity, new InputReceiver
@@ -158,14 +160,14 @@ namespace PhyMoveSync
                 {
                     var entity = entities[i];
                     var phyVel = velocityGroup[entity];
-                    var accAbility = moveAbilityGroup[entity];
+                    var moveAbility = moveAbilityGroup[entity];
                     var rot = rotationGroup[entity];
 
                     // linear
                     bool isStopMove = stopMovementGroup.HasComponent(entity);
                     if ( isStopMove )
                     {
-                        var moveLinear = accAbility.linearAcceleration * deltaTime;
+                        var moveLinear = moveAbility.linearAcceleration * deltaTime;
                         var sqMoveLinear = moveLinear * moveLinear;
                         var sqPhyVel = math.lengthsq(phyVel.Linear);
                         if (sqPhyVel < sqMoveLinear)// stopped
@@ -177,7 +179,7 @@ namespace PhyMoveSync
                         else
                         {
                             var stopDir = math.normalize(-phyVel.Linear);
-                            var stopAcc = stopDir * accAbility.linearAcceleration;
+                            var stopAcc = stopDir * moveAbility.linearAcceleration;
                             phyVel.Linear += stopAcc * deltaTime;
                         }
                     }
@@ -189,16 +191,21 @@ namespace PhyMoveSync
                             var moveLinear = math.mul(rot.Value, moveAcc.localLinear * deltaTime);
 
                             phyVel.Linear += moveLinear;
+
+                            var maxLinearSq = moveAbility.maxLinearSpeed * moveAbility.maxLinearSpeed;
+                            if (math.lengthsq(phyVel.Linear) > maxLinearSq)
+                            {
+                                phyVel.Linear = math.normalizesafe(phyVel.Linear) * moveAbility.maxLinearSpeed;
+                            }
                         }
                     }
                     //Debug.Log($"phyVel Linear: {phyVel.Linear}");
 
                     // angular
-                    
                     bool isStopRotate = stopRotationGroup.HasComponent(entity);
                     if (isStopRotate)
                     {
-                        var rotateAngular = accAbility.angularAcceleration * deltaTime;
+                        var rotateAngular = moveAbility.angularAcceleration * deltaTime;
                         var sqRotateAngular = rotateAngular * rotateAngular;
                         var sqPhyAng = math.lengthsq(phyVel.Angular);
                         if (sqPhyAng < sqRotateAngular) // stopped 
@@ -210,7 +217,7 @@ namespace PhyMoveSync
                         else
                         {
                             var stopRot = math.normalize(-phyVel.Angular);
-                            var stopAcc = stopRot * accAbility.angularAcceleration;
+                            var stopAcc = stopRot * moveAbility.angularAcceleration;
                             phyVel.Angular += stopAcc * deltaTime;
                         }
                     }
@@ -221,9 +228,12 @@ namespace PhyMoveSync
                             var roteAcc = rotateAccelerationGroup[entity];
                             var roteAngular = roteAcc.angular * deltaTime;
                             phyVel.Angular += roteAngular;
+
+                            var maxAngularSpeed3 = new float3(moveAbility.maxAngularSpeed);
+                            phyVel.Angular = math.clamp(phyVel.Angular, -maxAngularSpeed3, maxAngularSpeed3);
                         }
                     }
-                    
+                    //Debug.Log($"phyVel Angular: {phyVel.Angular}");
 
                     velocityGroup[entity] = phyVel;
                 }
