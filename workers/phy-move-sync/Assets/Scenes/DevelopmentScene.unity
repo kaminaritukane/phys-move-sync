@@ -225,6 +225,12 @@ PrefabInstance:
       propertyPath: m_Name
       value: ClientWorker
       objectReference: {fileID: 0}
+    - target: {fileID: 7557874807969014889, guid: 160a9a4e2c1d16a4a883f915c10498a0,
+        type: 3}
+      propertyPath: m_Icon
+      value: 
+      objectReference: {fileID: -964228994112308473, guid: 0000000000000000d000000000000000,
+        type: 0}
     - target: {fileID: 7557874807969014891, guid: 160a9a4e2c1d16a4a883f915c10498a0,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -368,15 +374,21 @@ PrefabInstance:
       propertyPath: m_Name
       value: GameLogicWorker
       objectReference: {fileID: 0}
+    - target: {fileID: 2126696593424655033, guid: 43c846c58bf01564d8a10b8fa8dd9146,
+        type: 3}
+      propertyPath: m_Icon
+      value: 
+      objectReference: {fileID: 5721338939258241955, guid: 0000000000000000d000000000000000,
+        type: 0}
     - target: {fileID: 2126696593424655035, guid: 43c846c58bf01564d8a10b8fa8dd9146,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: 100
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2126696593424655035, guid: 43c846c58bf01564d8a10b8fa8dd9146,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 2126696593424655035, guid: 43c846c58bf01564d8a10b8fa8dd9146,
         type: 3}

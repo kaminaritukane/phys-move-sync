@@ -2,18 +2,25 @@
 using Improbable.Gdk.Core;
 using Improbable.Gdk.PlayerLifecycle;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using Unity.Entities;
-using Unity.Physics;
-using UnityEngine;
-using Unity.Rendering;
-using System.Collections.Generic;
-using Unity.Transforms;
 using Unity.Mathematics;
-using Improbable.Gdk.TransformSynchronization;
+using Unity.Physics;
+using Unity.Rendering;
+using Unity.Transforms;
+using UnityEngine;
 
 namespace PhyMoveSync
 {
+    using PrefabInfos = Tuple<RenderMesh,
+                BlobAssetReference<Unity.Physics.Collider>,
+                float3>;
+    using PrefabStringToInfos = Dictionary<string,
+                Tuple<RenderMesh,
+                BlobAssetReference<Unity.Physics.Collider>,
+                float3>>;
+
     [DisableAutoCreation]
     [UpdateInGroup(typeof(SpatialOSReceiveGroup.InternalSpatialOSReceiveGroup))]
     [UpdateBefore(typeof(EntitySystem))]
@@ -24,19 +31,13 @@ namespace PhyMoveSync
 
         private readonly Vector3 workerOrigin;
 
-        private readonly Dictionary<string, 
-            Tuple<RenderMesh, 
-                BlobAssetReference<Unity.Physics.Collider>,
-                float3>> prefabs;
+        private readonly PrefabStringToInfos prefabs;
 
         public ClientUnitCreatSystem(Vector3 origin)
         {
             workerOrigin = origin;
 
-            prefabs = new Dictionary<string, 
-                Tuple<RenderMesh,
-                BlobAssetReference<Unity.Physics.Collider>,
-                float3>>();
+            prefabs = new PrefabStringToInfos();
         }
 
         protected override void OnCreate()
@@ -52,8 +53,6 @@ namespace PhyMoveSync
             foreach (var entityId in entitySystem.GetEntitiesAdded())
             {
                 workerSystem.TryGetEntity(entityId, out var entity);
-
-                Debug.Log($"[{World.Name}] Entity {entityId} created.");
 
                 if ( !EntityManager.HasComponent<Metadata.Component>(entity) )
                 {
@@ -93,48 +92,10 @@ namespace PhyMoveSync
         private void UpdateClientEntity(Entity entity, string prefabPath,
             float3 position, quaternion orientation)
         {
-            if (!prefabs.TryGetValue(prefabPath, out var prefabInfo))
+            var prefabInfo = GetPrefabInfo(prefabPath);
+            if (prefabInfo == null)
             {
-                var prefab = Resources.Load<GameObject>(prefabPath);
-                if (prefab == null)
-                {
-                    return; // no prefab for this entity
-                }
-
-                var meshData = prefab.GetComponent<MeshFilter>().sharedMesh;
-                var material = prefab.GetComponent<MeshRenderer>().sharedMaterial;
-
-                var scale3 = prefab.GetComponent<Transform>().localScale;
-
-                var renderMesh = new RenderMesh()
-                {
-                    mesh = meshData,
-                    material = material
-                };
-
-                var render = prefab.GetComponent<Renderer>();
-                var sharedCollider = Unity.Physics.BoxCollider.Create(float3.zero,
-                    quaternion.identity,
-                    scale3, 
-                    0.05f,
-                    null,
-                    new Unity.Physics.Material
-                    {
-                        Friction = 0f,
-                        Restitution = 1f,
-                        Flags = Unity.Physics.Material.MaterialFlags.EnableCollisionEvents
-                    }
-                );
-
-                prefabInfo = new Tuple<RenderMesh, 
-                    BlobAssetReference<Unity.Physics.Collider>,
-                    float3>(
-                    renderMesh,
-                    sharedCollider,
-                    scale3
-                );
-
-                prefabs.Add(prefabPath, prefabInfo);
+                return;
             }
 
             if ( EntityManager.HasComponent<RenderMesh>(entity) )
@@ -197,7 +158,7 @@ namespace PhyMoveSync
                 EntityManager.AddSharedComponentData(testEntity, meshRender);
 
                 EntityManager.AddComponentData(testEntity, new LocalToWorld { });
-                EntityManager.AddComponentData(testEntity, new Translation { Value = new float3(0, 0, 10) });
+                EntityManager.AddComponentData(testEntity, new Translation { Value = workerOrigin + new Vector3(0, 0, 5) });
                 EntityManager.AddComponentData(testEntity, new Rotation { Value = Quaternion.AngleAxis(-90f, Vector3.right) });
 
                 var sharedCollider2 = Unity.Physics.BoxCollider.Create(float3.zero,
@@ -211,6 +172,55 @@ namespace PhyMoveSync
                 );
                 EntityManager.AddComponentData(testEntity, new PhysicsCollider { Value = sharedCollider2 });
             }
+        }
+
+        private PrefabInfos GetPrefabInfo(string prefabPath)
+        {
+            if (!prefabs.TryGetValue(prefabPath, out var prefabInfo))
+            {
+                var prefab = Resources.Load<GameObject>(prefabPath);
+                if (prefab == null)
+                {
+                    return null; // no prefab for this entity
+                }
+
+                var meshData = prefab.GetComponent<MeshFilter>().sharedMesh;
+                var material = prefab.GetComponent<MeshRenderer>().sharedMaterial;
+
+                var scale3 = prefab.GetComponent<Transform>().localScale;
+
+                var renderMesh = new RenderMesh()
+                {
+                    mesh = meshData,
+                    material = material
+                };
+
+                var render = prefab.GetComponent<Renderer>();
+                var sharedCollider = Unity.Physics.BoxCollider.Create(float3.zero,
+                    quaternion.identity,
+                    scale3,
+                    0.05f,
+                    null,
+                    new Unity.Physics.Material
+                    {
+                        Friction = 0f,
+                        Restitution = 1f,
+                        Flags = Unity.Physics.Material.MaterialFlags.EnableCollisionEvents
+                    }
+                );
+
+                prefabInfo = new Tuple<RenderMesh,
+                    BlobAssetReference<Unity.Physics.Collider>,
+                    float3>(
+                    renderMesh,
+                    sharedCollider,
+                    scale3
+                );
+
+                prefabs.Add(prefabPath, prefabInfo);
+            }
+
+            return prefabInfo;
         }
     }
 }
