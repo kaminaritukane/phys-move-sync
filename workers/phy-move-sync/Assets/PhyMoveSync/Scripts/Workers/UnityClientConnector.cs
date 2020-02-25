@@ -55,6 +55,8 @@ namespace PhyMoveSync
             Worker.World.GetOrCreateSystem<ExportPhysicsWorld>();
             Worker.World.GetOrCreateSystem<EndFramePhysicsSystem>();
 
+            Worker.World.GetOrCreateSystem<ClientMovementSyncSystem>();
+
             // for render
             Worker.World.GetOrCreateSystem<EndFrameTRSToLocalToWorldSystem>();
             Worker.World.GetOrCreateSystem<CreateMissingRenderBoundsFromMeshRenderer>();

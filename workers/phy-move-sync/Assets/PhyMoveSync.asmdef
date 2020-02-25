@@ -10,7 +10,8 @@
         "Unity.Mathematics",
         "Unity.Physics",
         "Unity.Transforms",
-        "Unity.Rendering.Hybrid"
+        "Unity.Rendering.Hybrid",
+        "Improbable.Gdk.StandardTypes"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

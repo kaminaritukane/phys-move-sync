@@ -1,0 +1,13 @@
+package improbable.gdk.standardtypes;
+
+type IntDelta {
+	sint32 x = 1;
+	sint32 y = 2;
+	sint32 z = 3;
+}
+
+type IntAbsolute {
+	sint32 x = 1;
+	sint32 y = 2;
+	sint32 z = 3;
+}

@@ -14,6 +14,8 @@ namespace PhyMoveSync.Scripts.Config
             var template = new EntityTemplate();
             template.AddComponent(new Position.Snapshot(), clientAttribute);
             template.AddComponent(new Metadata.Snapshot("Player"), serverAttribute);
+            template.AddComponent(new ClientMovement.Snapshot(), clientAttribute);
+            template.AddComponent(new ServerMovement.Snapshot(), serverAttribute);
 
             PlayerLifecycleHelper.AddPlayerLifecycleComponents(template, workerId, serverAttribute);
 

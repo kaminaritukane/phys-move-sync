@@ -1,36 +1,31 @@
 package phy_move_sync;
 
-import "improbable/standard_library.schema";
+import "improbable/gdk/standardtypes/standardtypes.schema";
 
-type IntAbsolute {
-	sint32 x = 1;
-	sint32 y = 2;
-	sint32 z = 3;
+type ClientMoveRequest {
+	option<improbable.gdk.standardtypes.IntAbsolute> linear_velocity = 1;
+	option<improbable.gdk.standardtypes.IntAbsolute> angular_velocity = 2;
+	uint32 timestamp = 3;
+	float request_time = 4;
 }
 
-type TransformInfo{
-	IntAbsolute position = 1;
-	IntAbsolute rotation = 2;
-	sint32 delta_time = 3;
+type ServerMoveResponse {
+	option<improbable.gdk.standardtypes.IntAbsolute> position = 1;
+	option<improbable.gdk.standardtypes.IntAbsolute> rotation = 2;
+	option<improbable.gdk.standardtypes.IntAbsolute> linear_velocity = 3;
+	option<improbable.gdk.standardtypes.IntAbsolute> angular_velocity = 4;
+	uint32 timestamp = 5;
+	float request_time = 6;
 }
 
-type EntityTransformInfo{
-	EntityId entity_id = 1;
-	TransformInfo transform_info = 2;
-}
-
-type UnitsTransformPackage{
-	list<EntityTransformInfo> entity_transform_infos = 1;
-}
-
-component ClientUnitTransform{
+component ClientMovement {
 	id = 4001;
-	TransformInfo info = 1;
 	
-	event TransformInfo units_transform_changed;
+	ClientMoveRequest latest = 1;
 }
 
-component ServerUnitTransform{
-	id = 4006;
-	event UnitsTransformPackage units_transform_sync;
+component ServerMovement {
+	id = 4002;
+	
+	ServerMoveResponse latest = 1;
 }

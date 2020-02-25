@@ -30,7 +30,6 @@ namespace PhyMoveSync
                 {
                     var actions = EntityManager.GetBuffer<UnitAction>(entity);
 
-                    // TODO: do actions
                     foreach( var act in actions )
                     {
                         switch(act.action)

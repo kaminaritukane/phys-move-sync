@@ -14,11 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   AssemblyConfig:
     ProjectName: unity_gdk
-    AssemblyName: blank_assembly
+    AssemblyName: phy_move_sync
     ShouldForceUpload: 0
   DeploymentConfigs:
   - ProjectName: unity_gdk
-    AssemblyName: blank_assembly
+    AssemblyName: phy_move_sync
     Deployment:
       Name: blank_deployment
       SnapshotPath: snapshots/default.snapshot

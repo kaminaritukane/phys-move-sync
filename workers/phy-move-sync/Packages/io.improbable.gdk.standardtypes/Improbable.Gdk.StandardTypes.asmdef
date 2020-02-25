@@ -1,0 +1,16 @@
+{
+    "name": "Improbable.Gdk.StandardTypes",
+    "references": [
+        "Improbable.Gdk.Generated",
+        "Unity.Mathematics"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
