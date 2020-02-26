@@ -1,0 +1,10 @@
+package phy_move_sync;
+
+component UnitMoveAbility {
+	id = 4003;
+	
+	sint32 linear_acceleration = 1;
+	sint32 angular_acceleration = 2;
+	sint32 max_linear_speed = 3;
+	sint32 max_angular_speed = 4;
+}

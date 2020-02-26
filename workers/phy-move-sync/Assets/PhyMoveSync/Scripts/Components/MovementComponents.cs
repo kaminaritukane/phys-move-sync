@@ -4,14 +4,6 @@ using UnityEngine;
 
 namespace PhyMoveSync
 {
-    public struct MoveAbility : IComponentData
-    {
-        public float linearAcceleration;
-        public float angularAcceleration;
-        public float maxLinearSpeed;
-        public float maxAngularSpeed;
-    }
-
     public struct MoveAcceleration : IComponentData
     {
         public enum Direction
@@ -21,17 +13,17 @@ namespace PhyMoveSync
             Up
         }
 
-        public float forwardSpeed;
-        public float rightSpeed;
-        public float upSpeed;
+        public float forwardAcc;
+        public float rightAcc;
+        public float upAcc;
 
         public float3 localLinear
         {
             get
             {
-                var fwd = Vector3.forward * forwardSpeed;
-                var rht = Vector3.right * rightSpeed;
-                var up  = Vector3.up * upSpeed;
+                var fwd = Vector3.forward * forwardAcc;
+                var rht = Vector3.right * rightAcc;
+                var up  = Vector3.up * upAcc;
                 return fwd + rht + up;
             }
         }
@@ -43,7 +35,7 @@ namespace PhyMoveSync
 
     public struct RotateAcceleration : IComponentData
     {
-        public float3 angular;
+        public float3 angularAcc;
     }
 
     public struct StopRotation : IComponentData

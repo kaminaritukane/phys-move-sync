@@ -1,0 +1,3 @@
+UnitTransform.schema	ClientMovement	4001
+UnitTransform.schema	ServerMovement	4002
+UnitAbilities.schema	UnitMoveAbility	4003

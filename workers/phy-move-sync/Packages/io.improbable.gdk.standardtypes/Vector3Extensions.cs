@@ -6,59 +6,61 @@ namespace Improbable.Gdk.StandardTypes
 {
     public static class Vector3Extensions
     {
-        public static int ToInt100k(this float value)
+        private const float BIT_OFFSET_10K = 10000f;
+
+        public static int ToInt10k(this float value)
         {
-            return Mathf.RoundToInt(value * 100000);
+            return Mathf.RoundToInt(value * BIT_OFFSET_10K);
         }
 
-        public static float ToFloat100k(this int value)
+        public static float ToFloat10k(this int value)
         {
-            return ((float)value) / 100000;
+            return ((float)value) / BIT_OFFSET_10K;
         }
 
         public static IntAbsolute ToIntAbsolute(this Vector3 value)
         {
             return new IntAbsolute
             {
-                X = value.x.ToInt100k(),
-                Y = value.y.ToInt100k(),
-                Z = value.z.ToInt100k()
+                X = value.x.ToInt10k(),
+                Y = value.y.ToInt10k(),
+                Z = value.z.ToInt10k()
             };
         }
 
         public static Vector3 ToVector3(this IntAbsolute value)
         {
-            return new Vector3(value.X.ToFloat100k(), value.Y.ToFloat100k(), value.Z.ToFloat100k());
+            return new Vector3(value.X.ToFloat10k(), value.Y.ToFloat10k(), value.Z.ToFloat10k());
         }
 
         public static IntDelta ToIntDelta(this Vector3 value)
         {
             return new IntDelta
             {
-                X = value.x.ToInt100k(),
-                Y = value.y.ToInt100k(),
-                Z = value.z.ToInt100k()
+                X = value.x.ToInt10k(),
+                Y = value.y.ToInt10k(),
+                Z = value.z.ToInt10k()
             };
         }
 
         public static Vector3 ToVector3(this IntDelta value)
         {
-            return new Vector3(value.X.ToFloat100k(), value.Y.ToFloat100k(), value.Z.ToFloat100k());
+            return new Vector3(value.X.ToFloat10k(), value.Y.ToFloat10k(), value.Z.ToFloat10k());
         }
 
         public static IntAbsolute ToIntAbsolute(this float3 value)
         {
             return new IntAbsolute
             {
-                X = value.x.ToInt100k(),
-                Y = value.y.ToInt100k(),
-                Z = value.z.ToInt100k()
+                X = value.x.ToInt10k(),
+                Y = value.y.ToInt10k(),
+                Z = value.z.ToInt10k()
             };
         }
 
         public static float3 ToFloat3(this IntAbsolute value)
         {
-            return new float3(value.X.ToFloat100k(), value.Y.ToFloat100k(), value.Z.ToFloat100k());
+            return new float3(value.X.ToFloat10k(), value.Y.ToFloat10k(), value.Z.ToFloat10k());
         }
 
         public static Coordinates ToSpatialCoordinates(this Vector3 unityVector3)

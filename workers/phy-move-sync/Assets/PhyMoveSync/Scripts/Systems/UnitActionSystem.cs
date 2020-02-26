@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Improbable.Gdk.StandardTypes;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Entities;
@@ -86,9 +87,10 @@ namespace PhyMoveSync
         private void AddMoveAcceleration(Entity entity,
             MoveAcceleration.Direction eMoveDir, float parameter)
         {
-            if (EntityManager.HasComponent<MoveAbility>(entity))
+            if (EntityManager.HasComponent<UnitMoveAbility.Component>(entity))
             {
-                var moveAbility = EntityManager.GetComponentData<MoveAbility>(entity);
+                var moveAbility = EntityManager.GetComponentData<UnitMoveAbility.Component>(entity);
+                var linearAcc = moveAbility.LinearAcceleration.ToFloat10k();
 
                 if (EntityManager.HasComponent<MoveAcceleration>(entity))
                 {
@@ -96,13 +98,13 @@ namespace PhyMoveSync
                     switch( eMoveDir )
                     {
                         case MoveAcceleration.Direction.Forward:
-                            accComp.forwardSpeed += parameter * moveAbility.linearAcceleration;
+                            accComp.forwardAcc += parameter * linearAcc;
                             break;
                         case MoveAcceleration.Direction.Right:
-                            accComp.rightSpeed += parameter * moveAbility.linearAcceleration;
+                            accComp.rightAcc += parameter * linearAcc;
                             break;
                         case MoveAcceleration.Direction.Up:
-                            accComp.upSpeed += parameter * moveAbility.linearAcceleration;
+                            accComp.upAcc += parameter * linearAcc;
                             break;
                     }
                     EntityManager.SetComponentData(entity, accComp);
@@ -113,13 +115,13 @@ namespace PhyMoveSync
                     switch (eMoveDir)
                     {
                         case MoveAcceleration.Direction.Forward:
-                            accComp.forwardSpeed = parameter * moveAbility.linearAcceleration;
+                            accComp.forwardAcc = parameter * linearAcc;
                             break;
                         case MoveAcceleration.Direction.Right:
-                            accComp.rightSpeed = parameter * moveAbility.linearAcceleration;
+                            accComp.rightAcc = parameter * linearAcc;
                             break;
                         case MoveAcceleration.Direction.Up:
-                            accComp.upSpeed = parameter * moveAbility.linearAcceleration;
+                            accComp.upAcc = parameter * linearAcc;
                             break;
                     }
                     PostUpdateCommands.AddComponent<MoveAcceleration>(entity, accComp);
@@ -134,20 +136,21 @@ namespace PhyMoveSync
 
         private void AddRotateAcceleration(Entity entity, float3 rotateAxis, float parameter)
         {
-            if (EntityManager.HasComponent<MoveAbility>(entity))
+            if (EntityManager.HasComponent<UnitMoveAbility.Component>(entity))
             {
-                var moveAbility = EntityManager.GetComponentData<MoveAbility>(entity);
-                var angularAcc = rotateAxis * parameter;
+                var moveAbility = EntityManager.GetComponentData<UnitMoveAbility.Component>(entity);
+                var angularAccAbility = moveAbility.AngularAcceleration.ToFloat10k();
+                var angularAcc = rotateAxis * parameter * angularAccAbility;
 
                 if (EntityManager.HasComponent<RotateAcceleration>(entity))
                 {
                     var accComp = EntityManager.GetComponentData<RotateAcceleration>(entity);
-                    accComp.angular += angularAcc;
+                    accComp.angularAcc += angularAcc;
                     EntityManager.SetComponentData(entity, accComp);
                 }
                 else
                 {
-                    var acceleration = new RotateAcceleration { angular = angularAcc };
+                    var acceleration = new RotateAcceleration { angularAcc = angularAcc };
                     PostUpdateCommands.AddComponent<RotateAcceleration>(entity, acceleration);
                 }
 

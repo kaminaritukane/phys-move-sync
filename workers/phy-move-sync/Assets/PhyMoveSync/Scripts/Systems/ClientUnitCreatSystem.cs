@@ -1,6 +1,7 @@
 ﻿using Improbable;
 using Improbable.Gdk.Core;
 using Improbable.Gdk.PlayerLifecycle;
+using Improbable.Gdk.StandardTypes;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -125,14 +126,6 @@ namespace PhyMoveSync
             {
                 Linear = 0.01f,
                 Angular = 0.03f
-            });
-
-            EntityManager.AddComponentData(entity, new MoveAbility
-            {
-                linearAcceleration = 1f,
-                angularAcceleration = 1f,
-                maxLinearSpeed = 3f,
-                maxAngularSpeed = 2f
             });
 
             EntityManager.AddComponentData(entity, new InputReceiver

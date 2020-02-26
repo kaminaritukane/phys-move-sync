@@ -1,6 +1,7 @@
 using Improbable;
 using Improbable.Gdk.Core;
 using Improbable.Gdk.PlayerLifecycle;
+using Improbable.Gdk.StandardTypes;
 
 namespace PhyMoveSync.Scripts.Config
 {
@@ -16,6 +17,13 @@ namespace PhyMoveSync.Scripts.Config
             template.AddComponent(new Metadata.Snapshot("Player"), serverAttribute);
             template.AddComponent(new ClientMovement.Snapshot(), clientAttribute);
             template.AddComponent(new ServerMovement.Snapshot(), serverAttribute);
+            template.AddComponent(new UnitMoveAbility.Snapshot
+            {
+                LinearAcceleration = 1f.ToInt10k(),
+                AngularAcceleration = 1f.ToInt10k(),
+                MaxLinearSpeed = 3f.ToInt10k(),
+                MaxAngularSpeed = 2f.ToInt10k()
+            }, serverAttribute);
 
             PlayerLifecycleHelper.AddPlayerLifecycleComponents(template, workerId, serverAttribute);
 
