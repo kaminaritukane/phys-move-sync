@@ -58,11 +58,12 @@ namespace PhyMoveSync
                         latest.Timestamp = timestamp;
                         latest.RequestTime = Time.time;
                         moveComp.Latest = latest;
-                        //Debug.Log($"[Client] Entity {spEntityId.EntityId}, " +
-                        //    $"linear {latest.LinearVelocity.Value.ToVector3()}" +
-                        //    $"Angular {latest.AngularVelocity.Value.ToVector3()}");
+                        Debug.Log($"[Client] Sent frame:{latest.Timestamp}, tm:{latest.RequestTime}," +
+                            $" Entity {spEntityId.EntityId}, " +
+                            $" {latest.LinearVelocity.Value.ToFloat3()}" +
+                            $" {latest.AngularVelocity.Value.ToFloat3()}");
 
-                        requests.Enqueue(latest);
+                        requests.Enqueue(latest); 
                     }
                 );
             }
@@ -85,10 +86,18 @@ namespace PhyMoveSync
                 }
 
                 var latestValue = serverUpdate.Update.Latest.Value;
-                if (latestValue.LinearVelocity.HasValue)
+                var latestClientRequest = latestValue.Request;
+
+                // position reconcile
+                if (latestClientRequest.LinearVelocity.HasValue
+                    && latestValue.Position.HasValue)
                 {
-                    Debug.Log($"Client receive from server: Entity {serverUpdate.EntityId}" +
-                        $" {latestValue.LinearVelocity.Value.ToFloat3()}");
+                    Debug.Log($"[Client] Recv frame:{latestClientRequest.Timestamp}, tm:{latestClientRequest.RequestTime}," +
+                        $" Entity {serverUpdate.EntityId}" +
+                        $" {latestClientRequest.LinearVelocity.Value.ToFloat3()}," +
+                        $" {latestValue.Position.Value.ToFloat3()}");
+
+
                 }
             }
         }

@@ -233,8 +233,8 @@ namespace PhyMoveSync
                             var roteAngular = roteAcc.angularAcc * deltaTime;
                             phyVel.Angular += roteAngular;
 
-                            var masAngularSpeed = moveAbility.MaxAngularSpeed.ToFloat10k();
-                            var maxAngularSpeed3 = new float3(masAngularSpeed);
+                            var maxAngularSpeed = moveAbility.MaxAngularSpeed.ToFloat10k();
+                            var maxAngularSpeed3 = new float3(maxAngularSpeed);
                             phyVel.Angular = math.clamp(phyVel.Angular, -maxAngularSpeed3, maxAngularSpeed3);
                         }
                     }

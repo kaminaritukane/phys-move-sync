@@ -3,19 +3,16 @@ package phy_move_sync;
 import "improbable/gdk/standardtypes/standardtypes.schema";
 
 type ClientMoveRequest {
-	option<improbable.gdk.standardtypes.IntAbsolute> linear_velocity = 1;
-	option<improbable.gdk.standardtypes.IntAbsolute> angular_velocity = 2;
+	option<improbable.gdk.standard_types.IntAbsolute> linear_velocity = 1;
+	option<improbable.gdk.standard_types.IntAbsolute> angular_velocity = 2;
 	uint32 timestamp = 3;
 	float request_time = 4;
 }
 
 type ServerMoveResponse {
-	option<improbable.gdk.standardtypes.IntAbsolute> position = 1;
-	option<improbable.gdk.standardtypes.IntAbsolute> rotation = 2;
-	option<improbable.gdk.standardtypes.IntAbsolute> linear_velocity = 3;
-	option<improbable.gdk.standardtypes.IntAbsolute> angular_velocity = 4;
-	uint32 timestamp = 5;
-	float request_time = 6;
+	option<improbable.gdk.standard_types.IntAbsolute> position = 1;
+	option<improbable.gdk.standard_types.CompressedQuaternion> rotation = 2; // compressed quaternion
+	ClientMoveRequest request = 3;
 }
 
 component ClientMovement {

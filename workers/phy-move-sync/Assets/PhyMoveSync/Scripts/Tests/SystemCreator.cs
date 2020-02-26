@@ -1,6 +1,6 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using Improbable.Gdk.StandardTypes;
 using Unity.Entities;
+using Unity.Mathematics;
 using UnityEngine;
 
 namespace PhyMoveSync
@@ -18,6 +18,12 @@ namespace PhyMoveSync
             compSysGroup.AddSystemToUpdateList(inputSys);
             compSysGroup.AddSystemToUpdateList(actionSys);
             compSysGroup.AddSystemToUpdateList(moveSys);
+
+            //quaternion q = Quaternion.Euler(0, 0, 45);
+            //var ui = q.ToCompressedQuaternion();
+            //var qq = ui.ToUnityQuaternion();
+
+            //Debug.Log($"q:{q}, ui:{ui.Data}, qq:{qq}");
         }
     }
 }

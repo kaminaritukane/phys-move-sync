@@ -1,5 +1,4 @@
-﻿using Improbable.Gdk.Standardtypes;
-using UnityEngine;
+﻿using UnityEngine;
 using Unity.Mathematics;
 
 namespace Improbable.Gdk.StandardTypes
