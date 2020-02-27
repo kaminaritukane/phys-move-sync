@@ -24,6 +24,9 @@ namespace PhyMoveSync
             //var qq = ui.ToUnityQuaternion();
 
             //Debug.Log($"q:{q}, ui:{ui.Data}, qq:{qq}");
+
+            //var radians = Vector3Extensions.Radians(new float3(1, 0, 0), new float3(-1, 0, 0));
+            //Debug.Log($"radians: {radians}, angle: {radians * 180f / math.PI}");
         }
     }
 }

@@ -31,7 +31,7 @@ namespace PhyMoveSync
         private EntitySystem entitySystem;
         private WorkerSystem workerSystem;
 
-        private readonly Vector3 workerOrigin;
+        private readonly float3 workerOrigin;
 
         private readonly PrefabStringToInfos prefabs;
 
@@ -69,7 +69,7 @@ namespace PhyMoveSync
                 }
 
                 var posComp = EntityManager.GetComponentData<Improbable.Position.Component>(entity);
-                var position = posComp.Coords.ToUnityVector() + workerOrigin;
+                var position = posComp.Coords.ToFloat3() + workerOrigin;
                 var rotation = quaternion.identity;
 
                 var spatialOSEntityId = EntityManager.GetComponentData<SpatialEntityId>(entity);
@@ -89,7 +89,7 @@ namespace PhyMoveSync
         }
 
         private void UpdateServerEntity(Entity entity, string prefabPath, 
-            Vector3 position, quaternion orientation)
+            float3 position, quaternion orientation)
         {
             var prefabInfo = GetPrefabInfo(prefabPath);
             if ( prefabInfo == null )
@@ -143,7 +143,7 @@ namespace PhyMoveSync
                 EntityManager.AddSharedComponentData(testEntity, meshRender);
 
                 EntityManager.AddComponentData(testEntity, new LocalToWorld { });
-                EntityManager.AddComponentData(testEntity, new Translation { Value = workerOrigin + new Vector3(0, 0, 5) });
+                EntityManager.AddComponentData(testEntity, new Translation { Value = workerOrigin + new float3(0, 0, 5) });
                 EntityManager.AddComponentData(testEntity, new Rotation { Value = Quaternion.AngleAxis(-90f, Vector3.right) });
 
                 var sharedCollider2 = Unity.Physics.BoxCollider.Create(float3.zero,

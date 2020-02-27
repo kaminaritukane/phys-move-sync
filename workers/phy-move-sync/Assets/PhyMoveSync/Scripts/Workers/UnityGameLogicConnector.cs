@@ -44,7 +44,7 @@ namespace PhyMoveSync
         {
             Worker.World.CreateSystem<ServerUnitCreatSystem>(transform.position);
 
-            Worker.World.GetOrCreateSystem<ServerMovementSyncSystem>();
+            Worker.World.CreateSystem<ServerMovementSyncSystem>(transform.position);
 
             Worker.World.GetOrCreateSystem<PhysicsMoveSystem>();
 

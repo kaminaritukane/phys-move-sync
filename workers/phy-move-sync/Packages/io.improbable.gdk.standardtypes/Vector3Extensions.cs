@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using Unity.Mathematics;
 
 namespace Improbable.Gdk.StandardTypes
@@ -71,6 +71,16 @@ namespace Improbable.Gdk.StandardTypes
                 Z = unityVector3.z
             };
         }
+
+        public static float3 ToFloat3(this Coordinates coord)
+        {
+            return new float3((float)coord.X, (float)coord.Y, (float)coord.Z);
+        }
+
+        public static float Radians(float3 from, float3 to)
+        {
+            var dot = math.dot(math.normalizesafe(from), math.normalizesafe(to));
+            return math.acos(dot);
+        }
     }
 }
-
