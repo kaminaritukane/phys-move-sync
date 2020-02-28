@@ -24,8 +24,7 @@ namespace PhyMoveSync
         private float updateDelta = 1.0f / 15.0f;
         private uint timestamp = 0;
 
-        private readonly Dictionary<EntityId, Queue<ClientMoveRequest>> entitiesRequests =
-            new Dictionary<EntityId, Queue<ClientMoveRequest>>();
+        private readonly Queue<ClientMoveRequest> authEntityRequests = new Queue<ClientMoveRequest>();
 
 
         private EntityQuery unitsQuery;
@@ -38,6 +37,7 @@ namespace PhyMoveSync
             componentUpdateSystem = World.GetExistingSystem<ComponentUpdateSystem>();
 
             unitsQuery = GetEntityQuery(
+                ComponentType.ReadOnly<ClientAuthority>(),
                 ComponentType.ReadOnly<SpatialEntityId>(),
                 ComponentType.ReadOnly<PhysicsVelocity>(),
                 ComponentType.ReadOnly<ClientMovement.Component>()
@@ -69,12 +69,7 @@ namespace PhyMoveSync
                         //    $" {latest.AngularVelocity.Value.ToFloat3()}");
 
                         // add to queue
-                        if ( !entitiesRequests.TryGetValue(spEntityId.EntityId, out var requests) )
-                        {
-                            requests = new Queue<ClientMoveRequest>();
-                            entitiesRequests.Add(spEntityId.EntityId, requests);
-                        }
-                        requests.Enqueue(latest); 
+                        authEntityRequests.Enqueue(latest);
                     }
                 );
             }
@@ -96,25 +91,62 @@ namespace PhyMoveSync
                     continue;
                 }
 
-                // reconcile
-                if (entitiesRequests.TryGetValue(serverUpdate.EntityId, out var requests))
+                if (!EntityManager.HasComponent<Translation>(entity)
+                    || !EntityManager.HasComponent<Rotation>(entity)
+                    || !EntityManager.HasComponent<PhysicsVelocity>(entity))
                 {
-                    var latestValue = serverUpdate.Update.Latest.Value;
-                    Reconsile(entity, latestValue, requests);
+                    continue;
                 }
+
+                var latestValue = serverUpdate.Update.Latest.Value;
+                if ( EntityManager.HasComponent<ClientAuthority>(entity) )
+                {
+                    Reconsile(entity, latestValue, authEntityRequests);
+                }
+                else
+                {
+                    UpdateClientUnit(entity, latestValue);
+                }
+            }
+        }
+
+        private void UpdateClientUnit(Entity entity, ServerMoveResponse latestValue)
+        {
+            if (latestValue.Position.HasValue)
+            {
+                var posValue = latestValue.Position.Value.ToFloat3();
+                var transComp = EntityManager.GetComponentData<Translation>(entity);
+                transComp.Value = math.lerp(transComp.Value, posValue, Time.deltaTime);
+                EntityManager.SetComponentData(entity, transComp);
+            }
+
+            if (latestValue.Rotation.HasValue)
+            {
+                var rotValue = latestValue.Rotation.Value.ToUnityQuaternion();
+                var rotComp = EntityManager.GetComponentData<Rotation>(entity);
+                rotComp.Value = math.nlerp(rotComp.Value, rotValue, Time.deltaTime);
+                EntityManager.SetComponentData(entity, rotComp);
+            }
+
+            if (latestValue.Request.LinearVelocity.HasValue
+                || latestValue.Request.AngularVelocity.HasValue)
+            {
+                var phyVelComp = EntityManager.GetComponentData<PhysicsVelocity>(entity);
+                if (latestValue.Request.LinearVelocity.HasValue)
+                {
+                    phyVelComp.Linear = latestValue.Request.LinearVelocity.Value.ToFloat3();
+                }
+                if (latestValue.Request.AngularVelocity.HasValue)
+                {
+                    phyVelComp.Angular = latestValue.Request.AngularVelocity.Value.ToFloat3();
+                }
+                EntityManager.SetComponentData(entity, phyVelComp);
             }
         }
 
         private void Reconsile(Entity entity, ServerMoveResponse serverMoveResp,
             Queue<ClientMoveRequest> requests)
         {
-            if (!EntityManager.HasComponent<Translation>(entity)
-                || !EntityManager.HasComponent<Rotation>(entity)
-                || !EntityManager.HasComponent<PhysicsVelocity>(entity))
-            {
-                return;
-            }
-
             var transComp = EntityManager.GetComponentData<Translation>(entity);
             var rotComp = EntityManager.GetComponentData<Rotation>(entity);
             var phyVelComp = EntityManager.GetComponentData<PhysicsVelocity>(entity);
@@ -171,7 +203,6 @@ namespace PhyMoveSync
 
             var toNowTime = Time.time - lastRequestTime;
 
-            //bool bNeedUpdatePhyVel = false;
             // compare prediction pos and client simulation pos(current pos)
             {
                 predictionPos += (f3LastVel + phyVelComp.Linear) * toNowTime * 0.5f;
@@ -182,10 +213,7 @@ namespace PhyMoveSync
                     Debug.Log($"Prediction delta distance:{math.length(deltaPos)}");
 
                     transComp.Value = math.lerp(transComp.Value, predictionPos, Time.deltaTime);
-                    //phyVelComp.Linear = f3LastVel;
-
                     EntityManager.SetComponentData(entity, transComp);
-                    //bNeedUpdatePhyVel = true;
                 }
             }
 
@@ -202,17 +230,9 @@ namespace PhyMoveSync
                 {
                     Debug.Log($"Prediction delta radians: {radians}");
                     rotComp.Value = math.nlerp(rotComp.Value, predictionRot, Time.deltaTime);
-                    //phyVelComp.Angular = f3LastAng;
-
                     EntityManager.SetComponentData(entity, rotComp); 
-                    //bNeedUpdatePhyVel = true;
                 }
             }
-
-            //if (bNeedUpdatePhyVel)
-            //{
-            //    EntityManager.SetComponentData(entity, phyVelComp);
-            //}
 
             //if (latestClientRequest.LinearVelocity.HasValue
             //    && pos.HasValue)

@@ -42,6 +42,10 @@ namespace PhyMoveSync
     {
     }
 
+    public struct ClientAuthority : IComponentData
+    {
+    }
+
     public struct InputReceiver : IComponentData
     {
         public bool hasMoveInput;

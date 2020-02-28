@@ -80,7 +80,7 @@ namespace PhyMoveSync
                 var prefabPath = Path.Combine("Prefabs", $"{UnityClientConnector.WorkerType}",
                     $"{authString}", $"{metaData.EntityType}");
 
-                UpdateClientEntity(entity, prefabPath, position, rotation);
+                UpdateClientEntity(entity, authority, prefabPath, position, rotation);
             }
 
             var removedEntities = entitySystem.GetEntitiesRemoved();
@@ -90,7 +90,7 @@ namespace PhyMoveSync
             }
         }
 
-        private void UpdateClientEntity(Entity entity, string prefabPath,
+        private void UpdateClientEntity(Entity entity, bool authority, string prefabPath,
             float3 position, quaternion orientation)
         {
             var prefabInfo = GetPrefabInfo(prefabPath);
@@ -128,13 +128,17 @@ namespace PhyMoveSync
                 Angular = 0.03f
             });
 
-            EntityManager.AddComponentData(entity, new InputReceiver
+            if (authority)
             {
-                hasMoveInput = false,
-                hasRotateInput = false
-            });
+                EntityManager.AddComponentData(entity, new ClientAuthority());
+                EntityManager.AddComponentData(entity, new InputReceiver
+                {
+                    hasMoveInput = false,
+                    hasRotateInput = false
+                });
 
-            EntityManager.AddBuffer<UnitAction>(entity);
+                EntityManager.AddBuffer<UnitAction>(entity);
+            }
 
             // test
             {

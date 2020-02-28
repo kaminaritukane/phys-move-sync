@@ -2,6 +2,7 @@ using Improbable;
 using Improbable.Gdk.Core;
 using Improbable.Gdk.PlayerLifecycle;
 using Improbable.Gdk.StandardTypes;
+using UnityEngine;
 
 namespace PhyMoveSync.Scripts.Config
 {
@@ -13,7 +14,15 @@ namespace PhyMoveSync.Scripts.Config
             var serverAttribute = UnityGameLogicConnector.WorkerType;
 
             var template = new EntityTemplate();
-            template.AddComponent(new Position.Snapshot(), clientAttribute);
+
+            var position = new Vector3
+            {
+                x = Random.Range(-20f, 20f),
+                y = Random.Range(-5f, 5f),
+                z = Random.Range(-20f, 20f)
+            };
+
+            template.AddComponent(new Position.Snapshot(position.ToSpatialCoordinates()), serverAttribute);
             template.AddComponent(new Metadata.Snapshot("Player"), serverAttribute);
             template.AddComponent(new ClientMovement.Snapshot(), clientAttribute);
             template.AddComponent(new ServerMovement.Snapshot(), serverAttribute);
