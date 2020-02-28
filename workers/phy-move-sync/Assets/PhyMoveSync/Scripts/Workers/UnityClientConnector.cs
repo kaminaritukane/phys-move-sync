@@ -49,6 +49,7 @@ namespace PhyMoveSync
             Worker.World.GetOrCreateSystem<InputSystem>();
             Worker.World.GetOrCreateSystem<UnitActionSystem>();
             Worker.World.GetOrCreateSystem<PhysicsMoveSystem>();
+            Worker.World.GetOrCreateSystem<PhysicsCollisionSystem>();
 
             Worker.World.GetOrCreateSystem<BuildPhysicsWorld>();
             Worker.World.GetOrCreateSystem<StepPhysicsWorld>();

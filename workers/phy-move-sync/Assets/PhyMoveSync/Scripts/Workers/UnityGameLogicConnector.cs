@@ -43,10 +43,10 @@ namespace PhyMoveSync
         protected override void HandleWorkerConnectionEstablished()
         {
             Worker.World.CreateSystem<ServerUnitCreatSystem>(transform.position);
-
             Worker.World.CreateSystem<ServerMovementSyncSystem>(transform.position);
 
             Worker.World.GetOrCreateSystem<PhysicsMoveSystem>();
+            Worker.World.GetOrCreateSystem<PhysicsCollisionSystem>();
 
             Worker.World.GetOrCreateSystem<BuildPhysicsWorld>();
             Worker.World.GetOrCreateSystem<StepPhysicsWorld>();

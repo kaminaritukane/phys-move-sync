@@ -166,7 +166,7 @@ namespace PhyMoveSync
 
                     // linear
                     bool isStopMove = stopMovementGroup.HasComponent(entity);
-                    if ( isStopMove )
+                    if (isStopMove)
                     {
                         var linearAcc = moveAbility.LinearAcceleration.ToFloat10k();
                         var moveLinear = linearAcc * deltaTime;
