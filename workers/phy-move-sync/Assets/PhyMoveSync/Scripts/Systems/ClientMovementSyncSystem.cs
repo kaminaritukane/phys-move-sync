@@ -171,7 +171,7 @@ namespace PhyMoveSync
 
             var toNowTime = Time.time - lastRequestTime;
 
-            bool bNeedUpdatePhyVel = false;
+            //bool bNeedUpdatePhyVel = false;
             // compare prediction pos and client simulation pos(current pos)
             {
                 predictionPos += (f3LastVel + phyVelComp.Linear) * toNowTime * 0.5f;
@@ -181,11 +181,11 @@ namespace PhyMoveSync
                     //client simulation pos is to far from prediction Pos, need to update
                     Debug.Log($"Prediction delta distance:{math.length(deltaPos)}");
 
-                    transComp.Value = predictionPos;
-                    phyVelComp.Linear = f3LastVel;
+                    transComp.Value = math.lerp(transComp.Value, predictionPos, Time.deltaTime);
+                    //phyVelComp.Linear = f3LastVel;
 
                     EntityManager.SetComponentData(entity, transComp);
-                    bNeedUpdatePhyVel = true;
+                    //bNeedUpdatePhyVel = true;
                 }
             }
 
@@ -198,21 +198,21 @@ namespace PhyMoveSync
 
                 var testV3 = math.mul(deltaRot, new float3(1, 1, 1));
                 var radians = Vector3Extensions.Radians(testV3, new float3(1, 1, 1));
-                if ( radians > 0.05f ) // about 3 degrees
+                if ( radians > 0.05f )
                 {
                     Debug.Log($"Prediction delta radians: {radians}");
-                    rotComp.Value = predictionRot;
-                    phyVelComp.Angular = f3LastAng;
+                    rotComp.Value = math.nlerp(rotComp.Value, predictionRot, Time.deltaTime);
+                    //phyVelComp.Angular = f3LastAng;
 
-                    EntityManager.SetComponentData(entity, rotComp);
-                    bNeedUpdatePhyVel = true;
+                    EntityManager.SetComponentData(entity, rotComp); 
+                    //bNeedUpdatePhyVel = true;
                 }
             }
 
-            if (bNeedUpdatePhyVel)
-            {
-                EntityManager.SetComponentData(entity, phyVelComp);
-            }
+            //if (bNeedUpdatePhyVel)
+            //{
+            //    EntityManager.SetComponentData(entity, phyVelComp);
+            //}
 
             //if (latestClientRequest.LinearVelocity.HasValue
             //    && pos.HasValue)
