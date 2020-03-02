@@ -141,7 +141,7 @@ namespace PhyMoveSync
                     rotateAccelerationGroup = GetComponentDataFromEntity<RotateAcceleration>(true),
                     stopMovementGroup = GetComponentDataFromEntity<StopMovement>(true),
                     stopRotationGroup = GetComponentDataFromEntity<StopRotation>(true),
-                    deltaTime = Time.deltaTime
+                    deltaTime = updateDelta
                 }.Schedule(inputDeps);
 
                 // Make sure that the ECB system knows about our job
