@@ -20,7 +20,7 @@ namespace PhyMoveSync
         private WorkerSystem workerSystem;
         private ComponentUpdateSystem componentUpdateSystem;
 
-        private float cumulativeTimeDelta = 0f;
+        private float cumulativeTimeDelta = 0f;// Need to set a global cumulativeTimeDelta
         private float updateDelta = 1.0f / 15.0f;
         private uint timestamp = 0;
 
@@ -151,13 +151,13 @@ namespace PhyMoveSync
             var rotComp = EntityManager.GetComponentData<Rotation>(entity);
             var phyVelComp = EntityManager.GetComponentData<PhysicsVelocity>(entity);
 
-            var latestClientRequest = serverMoveResp.Request;
+            var verifiedClientRequest = serverMoveResp.Request;
 
-            var lastRequestTime = latestClientRequest.RequestTime;
-            var f3LastVel = latestClientRequest.LinearVelocity.HasValue ?
-                            latestClientRequest.LinearVelocity.Value.ToFloat3() : float3.zero;
-            var f3LastAng = latestClientRequest.AngularVelocity.HasValue ?
-                            latestClientRequest.AngularVelocity.Value.ToFloat3() : float3.zero;
+            var lastRequestTime = verifiedClientRequest.RequestTime;
+            var f3LastVel = verifiedClientRequest.LinearVelocity.HasValue ?
+                            verifiedClientRequest.LinearVelocity.Value.ToFloat3() : float3.zero;
+            var f3LastAng = verifiedClientRequest.AngularVelocity.HasValue ?
+                            verifiedClientRequest.AngularVelocity.Value.ToFloat3() : float3.zero;
 
             var authPos = serverMoveResp.Position;
             var authRot = serverMoveResp.Rotation;
@@ -167,7 +167,7 @@ namespace PhyMoveSync
 
             foreach (var req in requests.ToArray())
             {
-                if (req.Timestamp <= latestClientRequest.Timestamp)
+                if (req.Timestamp <= verifiedClientRequest.Timestamp)
                 {
                     requests.Dequeue();
                 }
@@ -180,7 +180,8 @@ namespace PhyMoveSync
                         var f3CurVel = req.LinearVelocity.HasValue ?
                             req.LinearVelocity.Value.ToFloat3() : float3.zero;
 
-                        predictionPos += (f3LastVel + f3CurVel) * deltaTime * 0.5f;
+                        //predictionPos += (f3LastVel + f3CurVel) * deltaTime * 0.5f;
+                        predictionPos += f3LastVel * deltaTime;
 
                         f3LastVel = f3CurVel;
                     }
@@ -191,7 +192,8 @@ namespace PhyMoveSync
                         var f3CurAng = req.AngularVelocity.HasValue ?
                             req.AngularVelocity.Value.ToFloat3() : float3.zero;
 
-                        var rotated = (f3LastAng + f3CurAng) * deltaTime * 0.5f;
+                        //var rotated = (f3LastAng + f3CurAng) * deltaTime * 0.5f;
+                        var rotated = f3LastAng * deltaTime;
                         predictionRot = math.mul(predictionRot, quaternion.EulerXYZ(rotated));
 
                         f3LastAng = f3CurAng;
@@ -205,7 +207,8 @@ namespace PhyMoveSync
 
             // compare prediction pos and client simulation pos(current pos)
             {
-                predictionPos += (f3LastVel + phyVelComp.Linear) * toNowTime * 0.5f;
+                //predictionPos += (f3LastVel + phyVelComp.Linear) * toNowTime * 0.5f;
+                predictionPos += f3LastVel * toNowTime;
                 var deltaPos = transComp.Value - predictionPos;
                 if (math.lengthsq(deltaPos) > 0.04f)
                 {
@@ -219,14 +222,15 @@ namespace PhyMoveSync
 
             // compare prediction rotation and client simulation rotation(current rotation)
             {
-                var toNowRotated = (f3LastAng + phyVelComp.Angular) * toNowTime * 0.5f;
+                //var toNowRotated = (f3LastAng + phyVelComp.Angular) * toNowTime * 0.5f;
+                var toNowRotated = f3LastAng * toNowTime;
                 predictionRot = math.mul(predictionRot, quaternion.EulerXYZ(toNowRotated));
 
                 var deltaRot = math.mul(predictionRot, math.inverse(rotComp.Value));
 
                 var testV3 = math.mul(deltaRot, new float3(1, 1, 1));
                 var radians = Vector3Extensions.Radians(testV3, new float3(1, 1, 1));
-                if ( radians > 0.05f )
+                if ( radians > 0.08f )
                 {
                     Debug.Log($"Prediction delta radians: {radians}");
                     rotComp.Value = math.nlerp(rotComp.Value, predictionRot, Time.deltaTime);

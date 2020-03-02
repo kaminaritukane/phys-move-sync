@@ -54,24 +54,28 @@ namespace PhyMoveSync
 
                 var clientLatestValue = clientUpdate.Update.Latest.Value;
 
+                UpdateServerMoveComponent(clientLatestValue, entity);
+
                 // Apply move quesnt to server physics
                 if (EntityManager.HasComponent<PhysicsVelocity>(entity))
                 {
                     var phyVel = EntityManager.GetComponentData<PhysicsVelocity>(entity);
-                    if (clientLatestValue.LinearVelocity.HasValue)
+
+                    var serveMoveComp = EntityManager.GetComponentData<ServerMovement.Component>(entity);
+                    var serverMoveLatest = serveMoveComp.Latest;
+                    var clientRequest = serverMoveLatest.Request;// here the request has been verified 
+
+                    if (clientRequest.LinearVelocity.HasValue)
                     {
-                        phyVel.Linear = clientLatestValue.LinearVelocity.Value.ToFloat3();
+                        phyVel.Linear = clientRequest.LinearVelocity.Value.ToFloat3();
                     }
-                    if (clientLatestValue.AngularVelocity.HasValue)
+                    if (clientRequest.AngularVelocity.HasValue)
                     {
-                        phyVel.Angular = clientLatestValue.AngularVelocity.Value.ToFloat3();
+                        phyVel.Angular = clientRequest.AngularVelocity.Value.ToFloat3();
                     }
 
                     EntityManager.SetComponentData(entity, phyVel);
                 }
-
-
-                UpdateServerMoveComponent(clientLatestValue, entity);
             }
         }
 

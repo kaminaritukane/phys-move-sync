@@ -16,6 +16,9 @@ namespace PhyMoveSync
         private EndSimulationEntityCommandBufferSystem m_EndSimulationEcbSystem;
         private EntityQuery physicsQuery;
 
+        private float cumulativeTimeDelta = 0f;// Need to set a global cumulativeTimeDelta
+        private float updateDelta = 1.0f / 15.0f;
+
         protected override void OnCreate()
         {
             base.OnCreate();
@@ -119,25 +122,36 @@ namespace PhyMoveSync
 
         protected override JobHandle OnUpdate(JobHandle inputDeps)
         {
-            var ecb = m_EndSimulationEcbSystem.CreateCommandBuffer();
-            JobHandle moveJobHandle = new MovePhysicsUnitJob
+            JobHandle jobRet = inputDeps;
+
+            var delta = cumulativeTimeDelta + UnityEngine.Time.deltaTime;
+            if (delta >= updateDelta)
             {
-                ecb = ecb,
-                entities = physicsQuery.ToEntityArray(Allocator.TempJob),
-                velocityGroup = GetComponentDataFromEntity<PhysicsVelocity>(),
-                moveAbilityGroup = GetComponentDataFromEntity<UnitMoveAbility.Component>(true),
-                rotationGroup = GetComponentDataFromEntity<Rotation>(true),
-                moveAccelerationGroup = GetComponentDataFromEntity<MoveAcceleration>(true),
-                rotateAccelerationGroup = GetComponentDataFromEntity<RotateAcceleration>(true),
-                stopMovementGroup = GetComponentDataFromEntity<StopMovement>(true),
-                stopRotationGroup = GetComponentDataFromEntity<StopRotation>(true),
-                deltaTime = Time.deltaTime
-            }.Schedule(inputDeps);
+                delta -= updateDelta;
 
-            // Make sure that the ECB system knows about our job
-            m_EndSimulationEcbSystem.AddJobHandleForProducer(moveJobHandle);
+                var ecb = m_EndSimulationEcbSystem.CreateCommandBuffer();
+                JobHandle moveJobHandle = new MovePhysicsUnitJob
+                {
+                    ecb = ecb,
+                    entities = physicsQuery.ToEntityArray(Allocator.TempJob),
+                    velocityGroup = GetComponentDataFromEntity<PhysicsVelocity>(),
+                    moveAbilityGroup = GetComponentDataFromEntity<UnitMoveAbility.Component>(true),
+                    rotationGroup = GetComponentDataFromEntity<Rotation>(true),
+                    moveAccelerationGroup = GetComponentDataFromEntity<MoveAcceleration>(true),
+                    rotateAccelerationGroup = GetComponentDataFromEntity<RotateAcceleration>(true),
+                    stopMovementGroup = GetComponentDataFromEntity<StopMovement>(true),
+                    stopRotationGroup = GetComponentDataFromEntity<StopRotation>(true),
+                    deltaTime = Time.deltaTime
+                }.Schedule(inputDeps);
 
-            return moveJobHandle;
+                // Make sure that the ECB system knows about our job
+                m_EndSimulationEcbSystem.AddJobHandleForProducer(moveJobHandle);
+
+                jobRet = moveJobHandle;
+            }
+            cumulativeTimeDelta = delta;
+
+            return jobRet;
         }
 
         struct MovePhysicsUnitJob : IJob
